@@ -2,6 +2,7 @@ package com.dvlab.geoquiz;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,6 +13,9 @@ import android.widget.Toast;
 
 
 public class QuizActivity extends ActionBarActivity {
+
+    private static final String TAG = QuizActivity.class.getSimpleName();
+    private static final String CURRENT_QUESTION_INDEX_KEY = "currentQuestionIndex";
 
     private Button trueButton;
     private Button falseButton;
@@ -31,6 +35,9 @@ public class QuizActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.d(TAG, "onCreate() called");
+
         setContentView(R.layout.activity_quiz);
 
         trueButton = (Button) findViewById(R.id.true_button);
@@ -50,6 +57,13 @@ public class QuizActivity extends ActionBarActivity {
                 Toast.makeText(QuizActivity.this, messageResource, Toast.LENGTH_SHORT).show();
             }
         });
+
+
+        if (savedInstanceState != null) {
+            currentQuestionIndex = savedInstanceState.getInt(CURRENT_QUESTION_INDEX_KEY, 0);
+            Log.d(TAG, "saved `currentQuestionIndex`: " + String.valueOf(currentQuestionIndex));
+        }
+
 
         questionTextView = (TextView) findViewById(R.id.question_text_view);
         int question = questionBank[currentQuestionIndex].getQuestion();
@@ -116,6 +130,14 @@ public class QuizActivity extends ActionBarActivity {
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        Log.d(TAG, "onSaveInstanceState()");
+        outState.putInt(CURRENT_QUESTION_INDEX_KEY, currentQuestionIndex);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_quiz, menu);
@@ -136,4 +158,35 @@ public class QuizActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart() called");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause() called");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume() called");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop() called");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy() called");
+    }
+
 }
