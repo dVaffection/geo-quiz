@@ -1,5 +1,6 @@
 package com.dvlab.geoquiz;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -22,8 +23,9 @@ public class QuizActivity extends ActionBarActivity {
     private ImageButton nextButton;
     private ImageButton prevButton;
     private TextView questionTextView;
+    private Button cheatButon;
 
-    private TrueFalse[] questionBank = new TrueFalse[]{
+    private final TrueFalse[] questionBank = new TrueFalse[]{
             new TrueFalse(R.string.question_oceans, true),
             new TrueFalse(R.string.question_africa, false),
             new TrueFalse(R.string.question_americas, true),
@@ -31,6 +33,7 @@ public class QuizActivity extends ActionBarActivity {
             new TrueFalse(R.string.question_mideast, true),
     };
     private int currentQuestionIndex = 0;
+    private boolean isCheater = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,19 +93,28 @@ public class QuizActivity extends ActionBarActivity {
                 moveToThePrevQuestion();
             }
         });
+
+        cheatButon = (Button) findViewById(R.id.cheat_button);
+        cheatButon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean answerIsTrue = questionBank[currentQuestionIndex].isTrueQuestion();
+
+                Intent intent = new Intent(QuizActivity.this, CheatActivity.class);
+                intent.putExtra(CheatActivity.EXTRA_ANSWER_IS_TRUE, answerIsTrue);
+                startActivityForResult(intent, 0);
+            }
+        });
     }
 
     private void moveToTheNextQuestion() {
-        currentQuestionIndex++;
-        if (currentQuestionIndex >= questionBank.length) {
-            currentQuestionIndex = 0;
-        }
+        currentQuestionIndex = (currentQuestionIndex + 1) % questionBank.length;
 
         displayQuestion(currentQuestionIndex);
     }
 
     private void moveToThePrevQuestion() {
-        currentQuestionIndex--;
+        currentQuestionIndex = (currentQuestionIndex - 1) % questionBank.length;
         if (currentQuestionIndex < 0) {
             currentQuestionIndex = questionBank.length - 1;
         }
@@ -113,13 +125,17 @@ public class QuizActivity extends ActionBarActivity {
     private void displayQuestion(int index) {
         int question = questionBank[index].getQuestion();
         questionTextView.setText(question);
+
+        isCheater = false;
     }
 
     private int isCorrectAnswer(boolean userChoice) {
         boolean questionChoice = questionBank[currentQuestionIndex].isTrueQuestion();
 
         int messageResource;
-        if ((userChoice && questionChoice) || (!userChoice && !questionChoice)) {
+        if (isCheater) {
+            messageResource = R.string.judgment_toast;
+        } else if ((userChoice && questionChoice) || (!userChoice && !questionChoice)) {
             messageResource = R.string.correct_toast;
             moveToTheNextQuestion();
         } else {
@@ -135,6 +151,13 @@ public class QuizActivity extends ActionBarActivity {
 
         Log.d(TAG, "onSaveInstanceState()");
         outState.putInt(CURRENT_QUESTION_INDEX_KEY, currentQuestionIndex);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        isCheater = data.getBooleanExtra(CheatActivity.EXTRA_ANSWER_SHOWN, true);
     }
 
     @Override
